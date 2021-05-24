@@ -90,16 +90,18 @@
                 <!-- 商品详情 -->
                 <div class="view grid-nosku">
 
+                    <!-- 在此处添加 v-for 遍历 results -->
                     <div class="product" v-for="result in results">
                         <div class="product-iWrap">
                             <!--商品封面-->
                             <div class="productImg-wrap">
                                 <a class="productImg">
-                                    <img src="https://img.alicdn.com/bao/uploaded/i1/3899981502/O1CN01q1uVx21MxxSZs8TVn_!!0-item_pic.jpg">
+                                    <img :src="result.img">
                                 </a>
                             </div>
                             <!--价格-->
                             <p class="productPrice">
+                                <!-- 使用 vue 语法显示变量 result.xx -->
                                 <em><b>¥</b>{{result.price}}</em>
                             </p>
                             <!--标题-->
@@ -137,12 +139,10 @@
             searchKey() {
                 var keyword = this.keyword;
                 alert(keyword);
-                // 绑定后 searchKey 则会被搜索按钮绑定并出发操作
+                // 绑定后搜索按钮将触发 searchKey 函数，将数据提交后台，将响应结果赋值给当前页面的 results
                 axios.get('search/'+keyword+'/1/10').then(response=> {
                     console.log(response.data);
-                    // 这里有获取值
                     this.results = response.data;
-                    // 这里未赋到值： ReferenceError: response is not defined index: 143
                     //绑定数据
                 })
                 // 利用 axios 拦截请求(拼接拿到的数据)加上默认的分页，then() 返回响应数据

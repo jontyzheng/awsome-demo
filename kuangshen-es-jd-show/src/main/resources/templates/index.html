@@ -96,7 +96,8 @@
                             <!--商品封面-->
                             <div class="productImg-wrap">
                                 <a class="productImg">
-                                    <img src="https://img.alicdn.com/bao/uploaded/i1/3899981502/O1CN01q1uVx21MxxSZs8TVn_!!0-item_pic.jpg">
+                                    <img :src="result.img">
+                                    <!-- ：src -->
                                 </a>
                             </div>
                             <!--价格-->
@@ -139,7 +140,7 @@
             searchKey() {
                 var keyword = this.keyword;
                 alert(keyword);
-                // 绑定后搜索按钮将触发 searchKey 函数并将数据提交后台并将结果赋值给当前页面
+                // 绑定后搜索按钮将触发 searchKey 函数，将数据提交后台，将响应结果赋值给当前页面的 results
                 axios.get('search/'+keyword+'/1/10').then(response=> {
                     console.log(response.data);
                     this.results = response.data;
