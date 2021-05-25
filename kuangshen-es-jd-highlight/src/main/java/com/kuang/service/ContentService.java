@@ -12,6 +12,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 
+import org.elasticsearch.common.document.DocumentField;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 
@@ -21,6 +23,8 @@ import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,4 +100,55 @@ public class ContentService {
     // 将查询结果封装成Map<String, Object> 格式
     // 实现分页查询，实现的 3 个基本参数：keyword，pageNo，pageSize
 
+
+    // 3、高亮解析
+    public List<Map<String, Object>> searchHighLight(String keyword, int pageNo, int pageSize) throws Exception {
+        if (pageNo <= 1)
+            pageNo = 1;
+
+        SearchRequest searchRequest = new SearchRequest("jd_goods");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+
+        sourceBuilder.from(pageNo);
+        sourceBuilder.size(pageSize);
+
+        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("title", keyword);
+        sourceBuilder.query(termQueryBuilder);
+        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        // 查询字段处理
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title");
+        highlightBuilder.preTags("<span style='background:yellow'>");
+        highlightBuilder.postTags("</span>");
+        sourceBuilder.highlighter(highlightBuilder);
+
+        searchRequest.source(sourceBuilder);
+        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+        ArrayList<Map<String, Object>> list = new ArrayList<>();
+
+        // 置换
+        for (SearchHit hit : searchResponse.getHits().getHits()) {
+
+            // 获取
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();//从 hit 中获取高亮域
+            HighlightField title = highlightFields.get("title"); //再从高亮域中取出标题
+            // 封装
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();//获取原来的结果
+            // 替换
+            if (title != null) {
+                Text[] fragments = title.fragments();
+                String n_title = "";
+
+                for (Text fragment: fragments) {
+                    n_title += fragment;
+                }
+                sourceAsMap.put("title", n_title);
+            }
+            list.add(sourceAsMap);
+        }
+        return list;
+    }
+    // 下一步：修改 controller 调用的方法
 }

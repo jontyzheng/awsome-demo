@@ -107,7 +107,8 @@
                             </p>
                             <!--标题-->
                             <p class="productTitle">
-                                <a>{{result.name}}</a>
+                                <a v-html="result.title"></a>
+                                <!-- 此处添加 v-html 解析成 html 样式 -->
                             </p>
                             <!-- 店铺名 -->
                             <div class="productShop">
